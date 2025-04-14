@@ -1,8 +1,6 @@
 package org.example;
 
-import io.vertx.core.AbstractVerticle;
-import io.vertx.core.Promise;
-import io.vertx.core.Vertx;
+import io.vertx.core.*;
 
 class SomeVerticle extends AbstractVerticle
 {
@@ -31,9 +29,13 @@ public class VerticlesDemo
 {
     public static void main(String[] args)
     {
-        Vertx vertx = Vertx.vertx();
 
-        vertx.deployVerticle(new SomeVerticle(), (res)->
+        VertxOptions vertxOptions = new VertxOptions();
+        vertxOptions.setEventLoopPoolSize(10);
+
+        Vertx vertx = Vertx.vertx(vertxOptions);
+
+        vertx.deployVerticle(new SomeVerticle(), new DeploymentOptions().setThreadingModel(ThreadingModel.WORKER) ,(res)->
         {
             if(res.succeeded())
             {
@@ -48,7 +50,6 @@ public class VerticlesDemo
                 });
             }
         });
-
 
     }
 }

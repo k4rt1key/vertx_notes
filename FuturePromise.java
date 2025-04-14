@@ -102,6 +102,7 @@ public class FuturePromise {
         vertx.setTimer(1000, (i) -> {
             // Completing the Promise after 1 second
             promise.complete("Done");
+            promise.complete("done");
 
             /*
              * Output when promise completes successfully:
