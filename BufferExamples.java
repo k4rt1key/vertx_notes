@@ -15,7 +15,7 @@ public class BufferExamples
 
 
             System.out.println("int value at " + 2 + " is " + buff.getInt(3));
-        System.out.println("string value at " + 3 + " is " + buff.getString(0,3));
+        System.out.println("string value at " + 3 + " is " + buff.getString(7,8));
 
     }
 }

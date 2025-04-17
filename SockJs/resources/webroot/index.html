@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vert.x SockJS Chat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        #chat-container {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+            height: 400px;
+            overflow-y: scroll;
+        }
+
+        #message-form {
+            display: flex;
+        }
+
+        #message-input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px 0 0 5px;
+        }
+
+        #send-button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 0 5px 5px 0;
+            cursor: pointer;
+        }
+
+        #send-button:hover {
+            background-color: #45a049;
+        }
+
+        .message {
+            padding: 8px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .user-message {
+            background-color: #f1f1f1;
+        }
+
+        .server-message {
+            background-color: #e3f2fd;
+        }
+
+        .system-message {
+            background-color: #ffebee;
+            font-style: italic;
+        }
+
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<h1>Vert.x SockJS Chat</h1>
+
+<div id="status" class="status">Connecting...</div>
+
+<div id="chat-container"></div>
+
+<form id="message-form">
+    <input type="text" id="message-input" placeholder="Type your message..." autocomplete="off">
+    <button type="submit" id="send-button">Send</button>
+</form>
+
+<!-- Include SockJS library -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatContainer = document.getElementById('chat-container');
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const statusElement = document.getElementById('status');
+
+        let socket = null;
+
+        // Connect to SockJS server
+        function connect() {
+            statusElement.textContent = 'Connecting...';
+
+            // Create a new SockJS connection
+            socket = new SockJS('/chat');
+
+            // Handle opening connection
+            socket.onopen = function() {
+                statusElement.textContent = 'Connected';
+                statusElement.style.color = '#4CAF50';
+            };
+
+            // Handle incoming messages
+            socket.onmessage = function(e) {
+                const message = e.data;
+                displayMessage(message);
+            };
+
+            // Handle errors
+            socket.onerror = function(e) {
+                statusElement.textContent = 'Connection error';
+                statusElement.style.color = '#f44336';
+                console.error('SockJS error:', e);
+            };
+
+            // Handle disconnection
+            socket.onclose = function() {
+                statusElement.textContent = 'Disconnected. Reconnecting...';
+                statusElement.style.color = '#ff9800';
+
+                // Try to reconnect after a delay
+                setTimeout(connect, 2000);
+            };
+        }
+
+        // Add message to chat container
+        function displayMessage(message) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+
+            if (message.startsWith('User:')) {
+                messageElement.classList.add('user-message');
+            } else if (message.startsWith('Server:')) {
+                messageElement.classList.add('server-message');
+            } else if (message.startsWith('System:')) {
+                messageElement.classList.add('system-message');
+            }
+
+            messageElement.textContent = message;
+            chatContainer.appendChild(messageElement);
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Send message on form submit
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const message = messageInput.value.trim();
+            if (message && socket && socket.readyState === SockJS.OPEN) {
+                socket.send(message);
+                messageInput.value = '';
+            }
+        });
+
+        // Initial connection
+        connect();
+    });
+</script>
+</body>
+</html>

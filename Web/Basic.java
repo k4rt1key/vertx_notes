@@ -14,7 +14,7 @@ public class Basic
     public static void main(String[] args)
     {
         Router router = Router.router(Vertx.vertx());
-        
+
         router
                 .route(HttpMethod.GET, "/some/path")
                 .handler(ctx -> {
